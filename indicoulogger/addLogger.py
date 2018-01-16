@@ -8,6 +8,7 @@ from indico.core.config import Config
 import MaKaC.webinterface.urlHandlers as urlHandlers
 from MaKaC.webinterface.rh.login import RHSignInBase, RHSignOut
 from indico.util.i18n import _
+from MaKaC.common.timezoneUtils import nowutc
 
 # Init User Logger
 logger = UserLogger().logger
@@ -38,14 +39,17 @@ def _makeLoginProcess(self):
             return _("Your account is not active\nPlease activate it and try again")
         else:
             logger.info(userinfo + ' Login OK: Logged in as ' + av.getFullName())
+            av._loginDate = nowutc()
             self._setSessionVars(av)
         self._addExtraParamsToURL()
         self._redirect(self._url)
 
 def _process(self):
-    userinfo = self._getUser().getFullName() + ' ' + str(request.remote_addr)
-    logger.info('Logged out: ' + userinfo)
-    if self._getUser():
+
+    user = self._getUser()
+    if user:
+        userinfo = user.getFullName() + ' ' + str(request.remote_addr)
+        logger.info('Logged out: ' + userinfo)
         self._returnURL = AuthenticatorMgr().getLogoutCallbackURL(self) or self._returnURL
         self._setUser(None)
 
