@@ -1,3 +1,4 @@
+import transaction
 from MaKaC.authentication import AuthenticatorMgr
 from MaKaC.user import LoginInfo
 from flask import request
@@ -39,8 +40,25 @@ def _makeLoginProcess(self):
             return _("Your account is not active\nPlease activate it and try again")
         else:
             logger.info(userinfo + ' Login OK: Logged in as ' + av.getFullName())
-            av._loginDate = nowutc()
-            self._setSessionVars(av)
+
+            # Conflict management
+            _MAX_ATTEMPTS = Config.getInstance().getConflictsMaxRetryAttempts()
+            attempts = 0
+            success = False
+            while attempts <= _MAX_ATTEMPTS and not success:
+                try:
+                    with transaction.manager:
+                        av._loginDate = nowutc()
+                        self._setSessionVars(av)
+                        success = True
+                except Exception as e:
+                    transaction.abort()
+                    attempts += 1
+                    # print msg
+                    if attempts == _MAX_ATTEMPTS:
+                        msg = "Too many attempts in saving loginDate"
+                        logger.warning(msg)
+
         self._addExtraParamsToURL()
         self._redirect(self._url)
 
