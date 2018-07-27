@@ -81,4 +81,10 @@ RHSignOut._process = _process
 
 
 def do_addLogger():
-    logger.info("User Logger Started")
+    logger.debug("User Logger Started")
+    from indico.smart_indexes.utils import method_wrapper
+    from MaKaC.authentication.LocalAuthentication import LocalIdentity
+
+    @method_wrapper(LocalIdentity, after=True)
+    def setPassword(self, newPwd):
+        logger.warning('User %s (%s) CHANGED PASSWORD SUCCESS to %s' % (self.user.getFullName(), self.user.getId(), '*' * len(newPwd)))
