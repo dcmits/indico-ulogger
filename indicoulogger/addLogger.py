@@ -87,4 +87,5 @@ def do_addLogger():
 
     @method_wrapper(LocalIdentity, after=True)
     def setPassword(self, newPwd):
-        logger.warning('User %s (%s) CHANGED PASSWORD SUCCESS to %s' % (self.user.getFullName(), self.user.getId(), '*' * len(newPwd)))
+        if newPwd:
+            logger.warning('User %s (%s) CHANGED PASSWORD SUCCESS to %s' % (self.user.getFullName(), self.user.getId(), '*' * len(newPwd or '')))
