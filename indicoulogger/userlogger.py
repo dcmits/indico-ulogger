@@ -25,8 +25,8 @@ class UserLogger():
         self.logger = logging.getLogger(__name__)
         formatter = logging.Formatter('%(asctime)s - user-logger - %(levelname)s - %(message)s')
         self.logger.setLevel(MIN_LEVEL)
-        stdout_hdlr = logging.handlers.TimedRotatingFileHandler(filename=logFilePath_info, encoding='utf8', when='W6',
-                                                                backupCount=0)
+        # Do not rotate log file: /etc/logrotate.d/indico-log will take care of it
+        stdout_hdlr = logging.handlers.RotatingFileHandler(filename=logFilePath_info, encoding='utf8')
         lower_than_warning = MaxLevelFilter(logging.WARNING)
         stdout_hdlr.addFilter( lower_than_warning )     #messages lower than WARNING go to stdout
         stdout_hdlr.setFormatter(formatter)
